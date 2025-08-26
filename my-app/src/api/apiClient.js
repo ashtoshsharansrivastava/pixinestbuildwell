@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a central Axios instance
 const apiClient = axios.create({
-  baseURL: 'https://pixienestbuildwell.onrender.com', 
+  baseURL: 'https://pixienestbuildwell.com', 
   headers: {
     'Content-Type': 'application/json',
   },
