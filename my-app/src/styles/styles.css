@@ -1,0 +1,23 @@
+:root {
+  /* ─── Neutrals ───────────────────────────── */
+  --color-surface-0: #0b1624;  /* page bg, footer */
+  --color-surface-1: #131f33;  /* cards, dropdowns */
+  --color-surface-2: #1e2b44;  /* inputs, muted panels */
+  --color-border   : #27405e;  /* outlines / dividers */
+
+  --color-text     : #d9e3f4;  /* default body text */
+  --color-muted    : #8ca2c8;  /* helper / caption text */
+  --color-input    : #1e2b44;  /* input bg */
+
+  /* ─── Brand ──────────────────────────────── */
+  --color-accent        : #0066ff; /* primary cobalt */
+  --color-accent-hover  : #0052cc; /* darker on hover */
+  --color-onaccent      : #ffffff;
+
+  /* ─── Header (NEW) ───────────────────────── */
+  --color-header: #5fa9ff;      /* light blue bar */
+
+  /* ─── Custom Maroon Gradient ─────────────── */
+  --color-maroon-dark: #800000; /* base maroon */
+  --gradient-maroon-black: linear-gradient(to top, #800000, #000000);
+}

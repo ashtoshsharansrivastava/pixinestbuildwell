@@ -1,0 +1,36 @@
+/* src/components/Header.css */
+
+.header-title {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 3.5rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* “PNBW” in Cinzel Bold */
+.header-title .primary {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.15em;
+}
+
+/* “Official” in Playfair Display Italic */
+.header-title .secondary {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: #eeeeee;
+  letter-spacing: 0.05em;
+  margin-left: 0.5rem;
+}
+
+/* Optional hover flair */
+.header-title:hover .primary {
+  color: #f0f0f0;
+}
+
+.header-title:hover .secondary {
+  color: #dddddd;
+}
