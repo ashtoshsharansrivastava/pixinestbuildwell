@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://pixienestbuildwell.com', // adjust if needed
+  baseURL: import.meta.env.BASE_URL,  // adjust if needed
   withCredentials: true,               // for cookies/session auth
 });
 
