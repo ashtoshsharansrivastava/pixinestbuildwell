@@ -41,8 +41,12 @@ const app = express();
 
 // --- MIDDLEWARE SETUP ---
 
-// Enable CORS for all incoming requests first
-app.use(cors());
+// Configure CORS to only allow requests from the specified frontend URL
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+};
+app.use(cors(corsOptions));
+
 
 // Security headers with correct cross-origin policy
 app.use(
@@ -60,10 +64,10 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 // --- END OF MIDDLEWARE ---
 
 
-// --- API ROUTES ---
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
+// // --- API ROUTES ---
+// app.get("/", (req, res) => {
+//   res.send("API is running...");
+// });
 
 // Mount all routers
 app.use("/api/auth", authRoutes);
