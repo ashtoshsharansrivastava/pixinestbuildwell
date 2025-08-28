@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a central Axios instance
 const apiClient = axios.create({
-  BASE_URL: 'https://pixienestbuildwell.com', 
+  baseURL: import.meta.env.VITE_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

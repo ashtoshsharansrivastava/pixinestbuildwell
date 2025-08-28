@@ -17,7 +17,7 @@ import StarRating from '../components/StarRating.jsx';
 import ReviewForm from '../components/ReviewForm.jsx';
 
 // This is no longer needed for images, but might be used by other API calls.
-const BACKEND_URL = import.meta.env.BASE_URL || 'https://pixinestbuildwell.onrender.com';
+const BACKEND_URL = import.meta.env.VITE_BASE_URL || 'https://pixinestbuildwell.onrender.com';
 
 export default function PropertyDetail() {
   const { id } = useParams();

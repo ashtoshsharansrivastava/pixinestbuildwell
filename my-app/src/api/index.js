@@ -1,5 +1,5 @@
 // src/api/index.js (or wherever)
-const API = import.meta.env.BASE_URL;
+const API = import.meta.env.VITE_BASE_URL;
 
 export const getProperties = () =>
   fetch(`${API}/api/properties`).then(res => res.json());
