@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.BASE_URL,  // adjust if needed
+  BASE_URL: import.meta.env.BASE_URL,  // adjust if needed
   withCredentials: true,               // for cookies/session auth
 });
 

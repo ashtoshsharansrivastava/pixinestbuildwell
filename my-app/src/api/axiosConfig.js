@@ -5,7 +5,7 @@ const LS_KEY = 'pnwb-user';
 
 // Create a new axios instance
 const api = axios.create({
-  baseURL: 'https://pixienestbuildwell.com', // Should be in .env for production
+  BASE_URL: 'https://pixienestbuildwell.com', // Should be in .env for production
   headers: {
     'Content-Type': 'application/json',
   },
