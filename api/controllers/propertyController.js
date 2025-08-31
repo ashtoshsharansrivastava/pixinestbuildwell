@@ -48,8 +48,10 @@ const createProperty = asyncHandler(async (req, res) => {
     amenities, submittedBy,
   } = req.body;
 
-  // ✅ FIX: Safely map over req.files, which is now guaranteed to exist by multer
-  const imagePaths = (req.files || []).map(file => `uploads/${file.filename}`);
+  // ✅ FIX: Save absolute URLs instead of relative paths
+  const imagePaths = (req.files || []).map(file => 
+    `${process.env.BACKEND_URL}/uploads/${file.filename}`
+  );
 
   const property = await Property.create({
     title, description, propertyType,
@@ -62,7 +64,6 @@ const createProperty = asyncHandler(async (req, res) => {
     location: `${locality}, ${city}`,
     locality, city,
     images: imagePaths,
-    // ✅ FIX: Safely parse JSON data
     videoUrls: videoUrls ? JSON.parse(videoUrls) : [],
     amenities: amenities ? JSON.parse(amenities) : [],
     locationCoords: {
@@ -88,17 +89,17 @@ const updateProperty = asyncHandler(async (req, res) => {
     throw new Error("Property not found");
   }
 
-  // ✅ FIX: Safely handle new uploaded images
-  const newImagePaths = (req.files || []).map(file => `uploads/${file.filename}`);
+  // ✅ FIX: Save absolute URLs instead of relative paths
+  const newImagePaths = (req.files || []).map(file => 
+    `${process.env.BACKEND_URL}/uploads/${file.filename}`
+  );
   let existingImagePaths = [];
   try {
-    // ✅ FIX: Safely parse JSON for existing images
     existingImagePaths = req.body.existingImages ? JSON.parse(req.body.existingImages) : [];
   } catch (error) {
     existingImagePaths = [];
   }
   
-  // ✅ FIX: Use consistent, safe number parsing for updates
   property.title = req.body.title || property.title;
   property.description = req.body.description || property.description;
   property.propertyType = req.body.propertyType || property.propertyType;
