@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import axios from 'axios';
 import * as authAPI from '../api/auth.js';
 
-const BACKEND_URL = 'https://pixinestbuildwell-1.onrender.com/api';
+const BACKEND_URL = 'https://pixinestbuildwell-1.onrender.com';
 
 // Helper function to get user info from localStorage
 const getStoredUserInfo = () => {
