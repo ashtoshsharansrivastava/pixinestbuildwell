@@ -74,7 +74,7 @@ export default function Contact() {
               <Mail size={48} strokeWidth={1.5} className="text-blue-600 mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Us</h3>
               <p className="text-gray-700">pixienestbuildwell35@gmail.com</p>
-              <p className="text-gray-700">pixienestbuildwellpvtltd@gmail.com</p>
+              <p className="text-gray-700"></p>
             </div>
             <div className="flex flex-col items-center text-center p-6 bg-blue-50 rounded-xl shadow-md">
               <MapPin size={48} strokeWidth={1.5} className="text-blue-600 mb-4" />
