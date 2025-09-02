@@ -78,7 +78,12 @@ export default function Contact() {
             </div>
             <div className="flex flex-col items-center text-center p-6 bg-blue-50 rounded-xl shadow-md">
               <MapPin size={48} strokeWidth={1.5} className="text-blue-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Our Office</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Our Registered Office</h3>
+              <p className="text-gray-700">176, Vikas Nagar, Loni Ghaziabad, U.P 201102</p>
+            </div>
+            <div className="flex flex-col items-center text-center p-6 bg-blue-50 rounded-xl shadow-md">
+              <MapPin size={48} strokeWidth={1.5} className="text-blue-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Our Corporate Office</h3>
               <p className="text-gray-700">2nd Floor, SBI Grahak Seva Kendra Building
                                           Major Mohit Sharma Marg, near Sahni Tower
                                           Rajendra Nagar, Sector 5
@@ -121,9 +126,9 @@ export default function Contact() {
         </section>
 
         <section className="bg-white p-8 sm:p-10 rounded-2xl shadow-xl border border-gray-100">
-          <h2 className="text-3xl font-bold text-gray-900 border-b-4 border-green-500 pb-4 mb-8 inline-block">Join Our Broker Network</h2>
+          <h2 className="text-3xl font-bold text-gray-900 border-b-4 border-green-500 pb-4 mb-8 inline-block">Join Our Network</h2>
           <p className="text-gray-800 leading-relaxed text-lg max-w-3xl mx-auto mb-8">
-            Are you a passionate and professional real estate broker looking to expand your reach and grow with a trusted partner? Join PNBW Officials' esteemed network!
+            Are you a passionate and professional real estate agent looking to expand your reach and grow with a trusted partner? Join PixieNest Buildwell  esteemed network! (charges may apply)
           </p>
           <form className="space-y-6 max-w-2xl mx-auto" onSubmit={handleBrokerFormSubmit}>
             <div>
