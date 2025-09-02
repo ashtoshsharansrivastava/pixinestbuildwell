@@ -1,8 +1,8 @@
 import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+// 1. Import 'Link' from react-router-dom
+import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore.js';
-// 1. Import a new icon for the enquiries link
-import { LayoutDashboard, Users, MapPin, LogOut, MessageSquare } from 'lucide-react'; 
+import { LayoutDashboard, Users, MapPin, LogOut, MessageSquare } from 'lucide-react';
 
 export default function AdminLayout() {
   const user = useAuthStore((s) => s.user);
@@ -26,9 +26,12 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside className="w-72 bg-white text-gray-800 p-6 flex flex-col shadow-2xl border-r border-gray-200">
         <div className="mb-10 text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900 leading-tight">
-            PNBW <span className="text-blue-600">Admin</span>
-          </h2>
+          {/* 2. Wrap the h2 tag with the Link component */}
+          <Link to="/" label='Home'>
+            <h2 className="text-3xl font-extrabold text-gray-900 leading-tight">
+              PNBW <span className="text-blue-600">Admin</span>
+            </h2>
+          </Link>
           {user && (
             <p className="text-sm text-gray-500 mt-2">Welcome, {user.fullName || 'Admin User'}</p>
           )}
@@ -44,7 +47,6 @@ export default function AdminLayout() {
           <NavLink to="/admin/properties" className={navLinkClass}>
             <MapPin size={20} /> Property Management
           </NavLink>
-          {/* 2. Add the new NavLink for Enquiries */}
           <NavLink to="/admin/enquiries" className={navLinkClass}>
             <MessageSquare size={20} /> Enquiries
           </NavLink>
