@@ -16,7 +16,6 @@ import { FaRupeeSign } from 'react-icons/fa';
 import StarRating from '../components/StarRating.jsx';
 import ReviewForm from '../components/ReviewForm.jsx';
 
-// This is no longer needed for images, but might be used by other API calls.
 const BACKEND_URL = import.meta.env.VITE_BASE_URL || 'https://pixinestbuildwell-1.onrender.com';
 
 export default function PropertyDetail() {
@@ -103,9 +102,8 @@ export default function PropertyDetail() {
                 {property.images.map((imgFilename, index) => (
                   <SwiperSlide key={index}>
                     <img
-                      // --- ✅ THIS IS THE FIX ---
-                      // Use imgFilename directly, as it's already the full URL from your database
-                      src={imgFilename}
+                      // This now correctly builds the full URL to your backend
+                      src={`${BACKEND_URL}/uploads/${imgFilename}`}
                       alt={`${property.title} - ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/800x500/e2e8f0/4a5568?text=Image+Error'; }}
