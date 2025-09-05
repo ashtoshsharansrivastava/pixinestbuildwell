@@ -4,9 +4,8 @@ import axios from 'axios';
 const apiClient = axios.create({
   // The key MUST be "baseURL" (lowercase 'b')
   baseURL: import.meta.env.VITE_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // ❌ The problematic 'Content-Type' header has been removed.
+  // Everything else is exactly as you had it.
 });
 
 // This interceptor will attach the auth token to every request
