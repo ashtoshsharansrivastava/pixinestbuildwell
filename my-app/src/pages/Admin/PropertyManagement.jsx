@@ -42,30 +42,29 @@ export default function PropertyManagement() {
     }
   };
 
-  // --- UPDATED FUNCTION ---
-  // This function handles the form data submission to the backend.
-  const handleAddProperty = async (formData) => {
+  // --- REFINED FUNCTION ---
+  // This function correctly handles the form data submission to the backend.
+  const handleAddProperty = async (propertyData) => {
     try {
       const data = new FormData();
 
-      // Iterate over the form data and append it to the FormData object
-      for (const key in formData) {
+      // Append all fields from the propertyData object to the FormData object
+      Object.keys(propertyData).forEach(key => {
+        const value = propertyData[key];
+
         if (key === 'images') {
-          // Append each image file directly. Multer handles arrays of files.
-          formData.images.forEach(file => {
+          // For the 'images' key, append each file individually.
+          value.forEach(file => {
             data.append('images', file);
           });
-        } else if (Array.isArray(formData[key])) {
-          // Convert arrays (like amenities and videoUrls) to JSON strings
-          // so they can be parsed on the backend.
-          data.append(key, JSON.stringify(formData[key]));
-        } else {
-          // Append all other non-empty fields
-          if (formData[key] !== null && formData[key] !== '') {
-            data.append(key, formData[key]);
-          }
+        } else if (Array.isArray(value)) {
+          // For other arrays (like amenities), stringify them.
+          data.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== '') {
+          // For all other non-empty fields, append them directly.
+          data.append(key, value);
         }
-      }
+      });
 
       // Call the API with the FormData object
       const newProperty = await propertiesApi.createProperty(data);
