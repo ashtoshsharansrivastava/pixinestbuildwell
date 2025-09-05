@@ -6,7 +6,10 @@ const propertySchema = mongoose.Schema(
     description: { type: String, required: true },
     propertyType: { type: String, required: true },
     price: { type: String, required: true },
-    area: { type: Number, required: true },
+    
+    // ✅ CHANGE: The 'area' field is now a String to support multiple values.
+    area: { type: String, required: true },
+
     bedrooms: { type: Number, default: 0 },
     bathrooms: { type: Number, default: 0 },
     furnishing: { type: String, default: 'Unfurnished' },
@@ -27,8 +30,9 @@ const propertySchema = mongoose.Schema(
       required: true,
       ref: 'User',
     },
-    submittedBy: { type: String },
-
+    
+    // ✅ CHANGE: The 'submittedBy' field has been removed.
+    
     // --- ADDED FOR REVIEW SYSTEM ---
     rating: {
       type: Number,
@@ -50,3 +54,4 @@ const propertySchema = mongoose.Schema(
 const Property = mongoose.model('Property', propertySchema);
 
 export default Property;
+

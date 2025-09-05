@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, Video, MapPin, DollarSign, Home, Bed, Bath, PlusCircle, Square, Info, Calendar, User, Image as ImageIcon, Grid } from 'lucide-react';
+import { X, Upload, Video, MapPin, DollarSign, Home, Bed, Bath, PlusCircle, Square, Info, Calendar, Grid } from 'lucide-react';
 
 export default function AddPropertyModal({ onClose, onAddProperty }) {
   const [formData, setFormData] = useState({
@@ -20,11 +20,10 @@ export default function AddPropertyModal({ onClose, onAddProperty }) {
     lat: '',
     lng: '',
     amenities: [],
-    submittedBy: '',
+    // ✅ CHANGE: 'submittedBy' has been removed from the initial state
   });
 
   const [newAmenity, setNewAmenity] = useState('');
-  // State to manage the video URL input field
   const [videoUrlInput, setVideoUrlInput] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -64,10 +63,9 @@ export default function AddPropertyModal({ onClose, onAddProperty }) {
   };
 
   const handleAddVideoUrl = () => {
-    // Now uses the state-controlled input field instead of prompt()
     if (videoUrlInput && videoUrlInput.trim() !== '') {
       setFormData((prev) => ({ ...prev, videoUrls: [...prev.videoUrls, videoUrlInput.trim()] }));
-      setVideoUrlInput(''); // Clear the input after adding
+      setVideoUrlInput('');
     }
   };
 
@@ -155,10 +153,19 @@ export default function AddPropertyModal({ onClose, onAddProperty }) {
                   <input type="text" id="price" className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 9000-60000 per yard" value={formData.price} onChange={handleChange} required />
                 </div>
                 
-                <label htmlFor="units" className="block text-gray-700 text-sm font-semibold">Area (Sq. Ft.) <span className="text-red-500">*</span></label>
+                {/* ✅ CHANGE: Area input now accepts multiple values */}
+                <label htmlFor="units" className="block text-gray-700 text-sm font-semibold">Area (Sq. Ft.) - Use commas for multiple <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <Square size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="number" id="units" className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 1200" value={formData.units} onChange={handleChange} required />
+                  <input 
+                    type="text" 
+                    id="units" 
+                    className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" 
+                    placeholder="e.g., 300, 200, 500" 
+                    value={formData.units} 
+                    onChange={handleChange} 
+                    required 
+                  />
                 </div>
 
                 <label htmlFor="locality" className="block text-gray-700 text-sm font-semibold">Locality <span className="text-red-500">*</span></label>
@@ -179,17 +186,23 @@ export default function AddPropertyModal({ onClose, onAddProperty }) {
           {currentStep === 2 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="space-y-4">
-                <label htmlFor="bedrooms" className="block text-gray-700 text-sm font-semibold">Bedrooms</label>
-                <div className="relative">
-                  <Bed size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="number" id="bedrooms" min="0" className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 3" value={formData.bedrooms} onChange={handleChange} />
-                </div>
+                
+                {/* ✅ CHANGE: Bedrooms and Bathrooms are now conditional */}
+                {formData.propertyType !== 'Plot' && (
+                  <>
+                    <label htmlFor="bedrooms" className="block text-gray-700 text-sm font-semibold">Bedrooms</label>
+                    <div className="relative">
+                      <Bed size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <input type="number" id="bedrooms" min="0" className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 3" value={formData.bedrooms} onChange={handleChange} />
+                    </div>
 
-                <label htmlFor="bathrooms" className="block text-gray-700 text-sm font-semibold">Bathrooms</label>
-                <div className="relative">
-                  <Bath size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="number" id="bathrooms" min="0" className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 2" value={formData.bathrooms} onChange={handleChange} />
-                </div>
+                    <label htmlFor="bathrooms" className="block text-gray-700 text-sm font-semibold">Bathrooms</label>
+                    <div className="relative">
+                      <Bath size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <input type="number" id="bathrooms" min="0" className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 2" value={formData.bathrooms} onChange={handleChange} />
+                    </div>
+                  </>
+                )}
                 
                 <label htmlFor="furnishing" className="block text-gray-700 text-sm font-semibold">Furnishing</label>
                 <select id="furnishing" className="w-full p-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-blue-500 focus:border-blue-500" value={formData.furnishing} onChange={handleChange}>
@@ -207,11 +220,7 @@ export default function AddPropertyModal({ onClose, onAddProperty }) {
                   <input type="number" id="builtYear" min="1900" max={new Date().getFullYear()} className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 2020" value={formData.builtYear} onChange={handleChange} />
                 </div>
 
-                <label htmlFor="submittedBy" className="block text-gray-700 text-sm font-semibold">Submitted By (Broker Name)</label>
-                <div className="relative">
-                  <User size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="text" id="submittedBy" className="w-full p-3 pl-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., John Doe" value={formData.submittedBy} onChange={handleChange} />
-                </div>
+                {/* ✅ CHANGE: Broker Name input has been removed */}
               </div>
 
               <div>
@@ -279,7 +288,6 @@ export default function AddPropertyModal({ onClose, onAddProperty }) {
                 
                 <label className="block text-gray-700 text-sm font-semibold">Video URLs</label>
                 <div className="flex items-center gap-2">
-                  {/* FIXED: This input is now controlled by React state */}
                   <input 
                     type="text" 
                     id="videoUrlInput" 

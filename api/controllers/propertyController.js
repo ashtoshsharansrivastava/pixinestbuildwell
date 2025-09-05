@@ -1,4 +1,3 @@
-// backend/controllers/propertyController.js
 import Property from "../models/Property.js";
 import Review from "../models/Review.js";
 import asyncHandler from 'express-async-handler';
@@ -45,10 +44,11 @@ const createProperty = asyncHandler(async (req, res) => {
   const {
     title, description, propertyType, price, units, bedrooms, bathrooms,
     furnishing, possession, builtYear, locality, city, videoUrls, lat, lng,
-    amenities, submittedBy,
+    amenities,
+    // ✅ CHANGE: submittedBy is no longer received from the form
   } = req.body;
 
-  // ✅ FIX: Save absolute URLs instead of relative paths
+  // Save absolute URLs instead of relative paths
   const imagePaths = (req.files || []).map(file => 
     `${process.env.BACKEND_URL}/uploads/${file.filename}`
   );
@@ -56,9 +56,11 @@ const createProperty = asyncHandler(async (req, res) => {
   const property = await Property.create({
     title, description, propertyType,
     price,
-    area: safeParseNumber(units),
-    bedrooms: safeParseNumber(bedrooms),
-    bathrooms: safeParseNumber(bathrooms),
+    // ✅ CHANGE: 'area' now saves the 'units' string directly.
+    area: units,
+    // ✅ CHANGE: Bedrooms/bathrooms are now conditional based on property type.
+    bedrooms: propertyType === 'Plot' ? 0 : safeParseNumber(bedrooms),
+    bathrooms: propertyType === 'Plot' ? 0 : safeParseNumber(bathrooms),
     furnishing, possession,
     builtYear: safeParseNumber(builtYear),
     location: `${locality}, ${city}`,
@@ -70,8 +72,7 @@ const createProperty = asyncHandler(async (req, res) => {
       lat: safeParseNumber(lat),
       lng: safeParseNumber(lng),
     },
-    agent: req.user._id,
-    submittedBy,
+    agent: req.user._id, // The agent is the logged-in user
   });
 
   res.status(201).json(property);
@@ -89,7 +90,7 @@ const updateProperty = asyncHandler(async (req, res) => {
     throw new Error("Property not found");
   }
 
-  // ✅ FIX: Save absolute URLs instead of relative paths
+  // Save absolute URLs instead of relative paths
   const newImagePaths = (req.files || []).map(file => 
     `${process.env.BACKEND_URL}/uploads/${file.filename}`
   );
@@ -104,9 +105,19 @@ const updateProperty = asyncHandler(async (req, res) => {
   property.description = req.body.description || property.description;
   property.propertyType = req.body.propertyType || property.propertyType;
   property.price = req.body.price || property.price;
-  property.area = safeParseNumber(req.body.area, property.area);
-  property.bedrooms = safeParseNumber(req.body.bedrooms, property.bedrooms);
-  property.bathrooms = safeParseNumber(req.body.bathrooms, property.bathrooms);
+  
+  // ✅ CHANGE: Update area with the new string format from 'units'.
+  property.area = req.body.units || property.area;
+
+  // ✅ CHANGE: Handle conditional bedrooms/bathrooms during updates.
+  if (property.propertyType === 'Plot') {
+      property.bedrooms = 0;
+      property.bathrooms = 0;
+  } else {
+      property.bedrooms = safeParseNumber(req.body.bedrooms, property.bedrooms);
+      property.bathrooms = safeParseNumber(req.body.bathrooms, property.bathrooms);
+  }
+
   property.furnishing = req.body.furnishing || property.furnishing;
   property.possession = req.body.possession || property.possession;
   property.builtYear = safeParseNumber(req.body.builtYear, property.builtYear);
@@ -123,7 +134,8 @@ const updateProperty = asyncHandler(async (req, res) => {
   } else if (req.body.lat === '' || req.body.lng === '') {
       property.locationCoords = { lat: null, lng: null };
   }
-  property.submittedBy = req.body.submittedBy || property.submittedBy;
+  
+  // ✅ CHANGE: 'submittedBy' field update logic is removed.
   property.isPublished = req.body.isPublished !== undefined ? req.body.isPublished : property.isPublished;
 
   const updatedProperty = await property.save();
@@ -198,3 +210,4 @@ export {
   getReviewsForProperty,
   createReview,
 };
+
