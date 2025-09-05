@@ -16,6 +16,7 @@ import { FaRupeeSign } from 'react-icons/fa';
 import StarRating from '../components/StarRating.jsx';
 import ReviewForm from '../components/ReviewForm.jsx';
 
+// This constant is still useful for other API calls, just not for building image URLs.
 const BACKEND_URL = import.meta.env.VITE_BASE_URL || 'https://pixinestbuildwell-1.onrender.com';
 
 export default function PropertyDetail() {
@@ -102,8 +103,8 @@ export default function PropertyDetail() {
                 {property.images.map((imgFilename, index) => (
                   <SwiperSlide key={index}>
                     <img
-                      // This now correctly builds the full URL to your backend
-                      src={`${BACKEND_URL}/uploads/${imgFilename}`}
+                      // The 'imgFilename' is now the full URL from the database
+                      src={imgFilename}
                       alt={`${property.title} - ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/800x500/e2e8f0/4a5568?text=Image+Error'; }}
