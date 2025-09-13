@@ -84,10 +84,8 @@ export default function Contact() {
             <div className="flex flex-col items-center text-center p-6 bg-blue-50 rounded-xl shadow-md">
               <MapPin size={48} strokeWidth={1.5} className="text-blue-600 mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Our Corporate Office</h3>
-              <p className="text-gray-700">2nd Floor, SBI Grahak Seva Kendra Building
-                                          Major Mohit Sharma Marg, near Sahni Tower
-                                          Rajendra Nagar, Sector 5
-                                          Sahibabad, Ghaziabad, Uttar Pradesh - 201005</p>
+              <p className="text-gray-700">S-01 2nd Floor B Block Sahni Tower Sectore 5 Rajendra Nagar
+                                           Near Major Mohit Sharma Metro Station, Sahibabad, Ghaziabad (UP) 201005</p>
             </div>
           </div>
         </section>
