@@ -19,7 +19,7 @@ const sendEmail = async (options) => {
   // Construct the email message
   const message = {
     to: options.email,
-    from: 'your-verified-email@example.com', // IMPORTANT: Replace this with the single sender email you verified in your SendGrid account.
+    from: 'pixienestbuildwell263@gmail.com', // IMPORTANT: Replace this with the single sender email you verified in your SendGrid account.
     subject: options.subject,
     text: options.message,
     // You can also include an HTML version of your message
