@@ -1,1 +1,6 @@
+# Secrets
+api/.env
+.env
 
+# Dependencies
+node_modules/
