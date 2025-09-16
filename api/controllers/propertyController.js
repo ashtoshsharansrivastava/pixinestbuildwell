@@ -1,3 +1,5 @@
+// api/controllers/propertyController.js
+
 import Property from "../models/Property.js";
 import Review from "../models/Review.js";
 import asyncHandler from 'express-async-handler';
@@ -27,7 +29,6 @@ const getPropertyById = asyncHandler(async (req, res) => {
   }
 });
 
-// ✅ FIX: Safe parsing function to prevent NaN and undefined errors
 const safeParseNumber = (value, defaultValue = null) => {
   if (value === null || value === undefined || value === '') {
     return defaultValue;
@@ -35,7 +36,6 @@ const safeParseNumber = (value, defaultValue = null) => {
   const num = Number(value);
   return isNaN(num) ? defaultValue : num;
 };
-
 
 // @desc    Create a property
 // @route   POST /api/properties
@@ -45,20 +45,15 @@ const createProperty = asyncHandler(async (req, res) => {
     title, description, propertyType, price, units, bedrooms, bathrooms,
     furnishing, possession, builtYear, locality, city, videoUrls, lat, lng,
     amenities,
-    // ✅ CHANGE: submittedBy is no longer received from the form
   } = req.body;
 
-  // Save absolute URLs instead of relative paths
-  const imagePaths = (req.files || []).map(file => 
-    `${process.env.BACKEND_URL}/uploads/${file.filename}`
-  );
+  // --- CHANGED: Get permanent image URLs directly from Cloudinary ---
+  const imagePaths = (req.files || []).map(file => file.path);
 
   const property = await Property.create({
     title, description, propertyType,
     price,
-    // ✅ CHANGE: 'area' now saves the 'units' string directly.
     area: units,
-    // ✅ CHANGE: Bedrooms/bathrooms are now conditional based on property type.
     bedrooms: propertyType === 'Plot' ? 0 : safeParseNumber(bedrooms),
     bathrooms: propertyType === 'Plot' ? 0 : safeParseNumber(bathrooms),
     furnishing, possession,
@@ -72,12 +67,10 @@ const createProperty = asyncHandler(async (req, res) => {
       lat: safeParseNumber(lat),
       lng: safeParseNumber(lng),
     },
-    agent: req.user._id, // The agent is the logged-in user
+    agent: req.user._id,
   });
-
   res.status(201).json(property);
 });
-
 
 // @desc    Update a property
 // @route   PUT /api/properties/:id
@@ -90,10 +83,9 @@ const updateProperty = asyncHandler(async (req, res) => {
     throw new Error("Property not found");
   }
 
-  // Save absolute URLs instead of relative paths
-  const newImagePaths = (req.files || []).map(file => 
-    `${process.env.BACKEND_URL}/uploads/${file.filename}`
-  );
+  // --- CHANGED: Get permanent image URLs for new files from Cloudinary ---
+  const newImagePaths = (req.files || []).map(file => file.path);
+
   let existingImagePaths = [];
   try {
     existingImagePaths = req.body.existingImages ? JSON.parse(req.body.existingImages) : [];
@@ -105,11 +97,8 @@ const updateProperty = asyncHandler(async (req, res) => {
   property.description = req.body.description || property.description;
   property.propertyType = req.body.propertyType || property.propertyType;
   property.price = req.body.price || property.price;
-  
-  // ✅ CHANGE: Update area with the new string format from 'units'.
   property.area = req.body.units || property.area;
 
-  // ✅ CHANGE: Handle conditional bedrooms/bathrooms during updates.
   if (property.propertyType === 'Plot') {
       property.bedrooms = 0;
       property.bathrooms = 0;
@@ -126,22 +115,22 @@ const updateProperty = asyncHandler(async (req, res) => {
   property.location = `${property.locality}, ${property.city}`;
 
   property.images = [...existingImagePaths, ...newImagePaths];
-  property.videoUrls = req.body.videoUrls ? JSON.parse(req.body.videoUrls) : property.videoUrls;
+  property.videoUrls = req.body.videoUrls ?
+    JSON.parse(req.body.videoUrls) : property.videoUrls;
   property.amenities = req.body.amenities ? JSON.parse(req.body.amenities) : property.amenities;
-  
+
   if (req.body.lat && req.body.lng) {
     property.locationCoords = { lat: safeParseNumber(req.body.lat), lng: safeParseNumber(req.body.lng) };
   } else if (req.body.lat === '' || req.body.lng === '') {
       property.locationCoords = { lat: null, lng: null };
   }
   
-  // ✅ CHANGE: 'submittedBy' field update logic is removed.
-  property.isPublished = req.body.isPublished !== undefined ? req.body.isPublished : property.isPublished;
+  property.isPublished = req.body.isPublished !== undefined ?
+    req.body.isPublished : property.isPublished;
 
   const updatedProperty = await property.save();
   res.json(updatedProperty);
 });
-
 
 // @desc    Delete a property
 // @route   DELETE /api/properties/:id
@@ -157,8 +146,7 @@ const deleteProperty = asyncHandler(async (req, res) => {
   }
 });
 
-
-// --- ROUTES FOR REVIEWS ---
+// --- ROUTES FOR REVIEWS --- (This part remains unchanged)
 
 // @desc    Get reviews for a property
 // @route   GET /api/properties/:id/reviews
@@ -200,7 +188,6 @@ const createReview = asyncHandler(async (req, res) => {
   res.status(201).json({ message: 'Review added' });
 });
 
-
 export {
   getProperties,
   getPropertyById,
@@ -210,4 +197,3 @@ export {
   getReviewsForProperty,
   createReview,
 };
-
