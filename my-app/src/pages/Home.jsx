@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'; // ✅ IMPORT ADDED
 import * as api from '../api/properties';
 import SearchBar from '../components/SearchBar.jsx';
 import PropertyGrid from '../components/PropertyGrid.jsx';
@@ -57,7 +58,7 @@ export default function Home() {
         list.sort((a, b) => a.price - b.price);
         break;
       case 'price-desc':
-        list.sort((a, b) => b.price - a.price);
+        list.sort((a, b) => b.price - b.price);
         break;
       case 'location-asc':
         list.sort((a, b) => (a.city || '').localeCompare(b.city || ''));
@@ -66,7 +67,7 @@ export default function Home() {
         list.sort((a, b) => (b.city || '').localeCompare(a.city || ''));
         break;
       case 'newest':
-        list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        list.sort((a, b) => (b.createdAt || 0) - (b.createdAt || 0));
         break;
       case 'oldest':
         list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
@@ -84,6 +85,18 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-100 text-gray-900">
+      
+      {/* --- ✅ NEW SEO BLOCK ADDED --- */}
+      <Helmet>
+        <title>Real Estate in Delhi-NCR | Find Properties | Pixie Nest BuildWell</title>
+        <meta 
+          name="description" 
+          content="Find your dream property with Pixie Nest BuildWell. Explore 1000s of verified real estate listings for homes, apartments, and plots in Delhi-NCR." 
+        />
+        <link rel="canonical" href="https://pixienestbuildwell.com" />
+      </Helmet>
+      {/* --- END OF SEO BLOCK --- */}
+
       <section className="relative py-20 px-6 bg-cover bg-center overflow-hidden" style={{ backgroundImage: 'url("/images/hero-bg.jpg")' }}>
         <div className="absolute inset-0 bg-white opacity-60"></div>
         <div className="relative z-10 text-center">
