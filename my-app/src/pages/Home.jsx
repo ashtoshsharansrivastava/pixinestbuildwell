@@ -92,7 +92,7 @@ export default function Home() {
           </h1>
           {/* ✅ UPDATED TEXT HERE */}
           <p className="text-xl md:text-2xl text-gray-700 mt-4 max-w-3xl mx-auto drop-shadow animate-fade-in-up delay-200">
-            Explore top listings in Delhi-NCR and other premier states across the nation.
+            with Pixie Nest BuildWell. Explore 1000s of verified real estate listings for homes, apartments, and plots in Delhi-NCR.
           </p>
           <div className="mt-10 flex justify-center animate-fade-in-up delay-400">
             <SearchBar
