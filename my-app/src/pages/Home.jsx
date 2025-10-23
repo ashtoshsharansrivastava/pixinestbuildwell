@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async'; // ✅ IMPORT ADDED
+// import { Helmet } from 'react-helmet-async'; // ❌ REMOVE THIS LINE
 import * as api from '../api/properties';
 import SearchBar from '../components/SearchBar.jsx';
 import PropertyGrid from '../components/PropertyGrid.jsx';
@@ -86,15 +86,14 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-100 text-gray-900">
       
-      {/* --- ✅ NEW SEO BLOCK ADDED --- */}
-      <Helmet>
-        <title>Real Estate in Delhi-NCR | Find Properties | Pixie Nest BuildWell</title>
-        <meta 
-          name="description" 
-          content="Find your dream property with Pixie Nest BuildWell. Explore 1000s of verified real estate listings for homes, apartments, and plots in Delhi-NCR." 
-        />
-        <link rel="canonical" href="https://pixienestbuildwell.com" />
-      </Helmet>
+      {/* --- ✅ NEW React 19 SEO BLOCK --- */}
+      {/* With React 19, you can just write the tags directly! */}
+      <title>Real estate in Delhi-NCR | Find Properties | Pixie Nest BuildWell</title>
+      <meta 
+        name="description" 
+        content="Find your dream property with Pixie Nest BuildWell. Explore 1000s of verified real estate listings for homes, apartments, and plots in Delhi-NCR." 
+      />
+      <link rel="canonical" href="https://pixienestbuildwell.com" />
       {/* --- END OF SEO BLOCK --- */}
 
       <section className="relative py-20 px-6 bg-cover bg-center overflow-hidden" style={{ backgroundImage: 'url("/images/hero-bg.jpg")' }}>
