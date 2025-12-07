@@ -14,7 +14,7 @@
     "@vitejs/plugin-react": "^5.0.1",
     "autoprefixer": "^10.4.21",
     "axios": "^1.10.0",
-    "framer-motion": "^12.20.1",
+    "framer-motion": "^12.23.25",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.539.0",
     "postcss": "^8.5.6",
