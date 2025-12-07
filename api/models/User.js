@@ -24,7 +24,6 @@ const userSchema = mongoose.Schema(
     role: {
       type: String,
       required: true,
-      // ✅ CORRECTED: Use 'broker' for consistency
       enum: ['admin', 'customer', 'broker'],
       default: 'customer',
     },
@@ -33,17 +32,24 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    // ✅ ADDED: Field for Google Photo
+    avatar: {
+      type: String,
+      default: '',
+    },
+    // ✅ ADDED: Flag to identify Google users
+    isGoogleUser: {
+      type: Boolean,
+      default: false,
+    },
     passwordResetToken: String,
     passwordResetExpires: Date,
     
-    // ✅ ADDED: Field to store the broker's unique referral code
     referralCode: {
       type: String,
       unique: true,
-      sparse: true, // Allows multiple documents to have a null value
+      sparse: true,
     },
-
-    // ✅ ADDED: Field to store the ID of the referring user
     referredBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

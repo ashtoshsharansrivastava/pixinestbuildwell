@@ -1,9 +1,9 @@
+// backend/controllers/authController.js
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import OTP from "../models/OTP.js";
 import sendEmail from "../utils/sendEmail.js";
-
 
 // Generate JWT
 const generateToken = (id) => {
@@ -12,15 +12,79 @@ const generateToken = (id) => {
   });
 };
 
+// @desc    Google Auth (Login/Register)
+// @route   POST /api/auth/google
+// @access  Public
+export const googleAuth = async (req, res) => {
+  try {
+    const { email, name, photo } = req.body;
+
+    // 1. Check if user already exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // --- CASE A: User exists -> Log them in ---
+      // Update avatar if provided
+      if (photo && user.avatar !== photo) {
+        user.avatar = photo;
+        await user.save();
+      }
+
+      res.json({
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        avatar: user.avatar,
+        token: generateToken(user._id),
+      });
+
+    } else {
+      // --- CASE B: New User -> Create account ---
+      // We generate a random password since they login via Google
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      
+      // We use a placeholder phone number because your Schema requires it.
+      // Ideally, you might ask the user for this later in their profile settings.
+      const dummyPhone = "0000000000"; 
+
+      user = await User.create({
+        fullName: name,
+        email,
+        password: randomPassword,
+        phoneNumber: dummyPhone, 
+        avatar: photo || '',
+        role: 'customer',
+        isVerified: true, // Google verified this email
+        isGoogleUser: true
+      });
+
+      if (user) {
+        res.status(201).json({
+          _id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          role: user.role,
+          avatar: user.avatar,
+          token: generateToken(user._id),
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    res.status(500).json({ message: "Google Login failed" });
+  }
+};
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
   const { fullName, email, password, phoneNumber } = req.body;
-
   try {
     const userExists = await User.findOne({ email });
-
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -30,16 +94,14 @@ export const registerUser = async (req, res) => {
       email,
       password,
       phoneNumber,
-      role: 'customer', // Assign a default role for new registrations
+      role: 'customer',
     });
 
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Create OTP record (will now expire in 10 minutes, see OTP model)
+    // Create OTP record
     await OTP.create({ email, otp });
-
-    // Send OTP to user's email
+    // Send OTP
     const message = `Your OTP for registration is: ${otp}. It is valid for 10 minutes.`;
     await sendEmail({
       email: user.email,
@@ -47,19 +109,17 @@ export const registerUser = async (req, res) => {
       message,
     });
 
-    // Return user data and token upon successful registration
     res.status(201).json({
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
       phoneNumber: user.phoneNumber,
-      role: user.role, // Ensure role is included
-      token: generateToken(user._id), // Generate and include the token
+      role: user.role,
+      token: generateToken(user._id),
       message: "Registration successful. Please check your email for an OTP to verify your account.",
     });
   } catch (error) {
     console.error(error);
-    // If the error is a Mongoose validation error, provide more detail
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: `Validation Error: ${error.message}` });
     }
@@ -72,17 +132,11 @@ export const registerUser = async (req, res) => {
 // @access  Public
 export const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
-  console.log("Backend received Verify OTP request:"); // <-- ADD THIS
-  console.log("  Email:", email);                     // <-- ADD THIS
-  console.log("  OTP:", otp);                         // <-- ADD THIS
+  console.log("Backend received Verify OTP request:", email, otp);
 
   try {
-    // Find the OTP. The expiration is now handled by the database.
     const otpRecord = await OTP.findOne({ email, otp });
-    console.log("  OTP record found in DB:", otpRecord); // <-- ADD THIS
-
     if (!otpRecord) {
-      // The OTP is either invalid or has expired and been automatically deleted.
       return res.status(400).json({ message: "Invalid OTP or OTP has expired" });
     }
 
@@ -93,13 +147,10 @@ export const verifyOtp = async (req, res) => {
 
     user.isVerified = true;
     await user.save();
-
-    // Delete the OTP record after successful verification
     await OTP.deleteOne({ _id: otpRecord._id });
-
     res.status(200).json({ message: "Email verified successfully." });
   } catch (error) {
-    console.error("Error during OTP verification:", error); // <-- ADD THIS
+    console.error("Error during OTP verification:", error);
     res.status(500).json({ message: "Server error during OTP verification" });
   }
 };
@@ -109,10 +160,8 @@ export const verifyOtp = async (req, res) => {
 // @access  Public
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const user = await User.findOne({ email });
-
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -128,7 +177,6 @@ export const loginUser = async (req, res) => {
       role: user.role,
       token: generateToken(user._id),
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error during login" });
@@ -140,29 +188,20 @@ export const loginUser = async (req, res) => {
 // @access  Public
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
-
   try {
     const user = await User.findOne({ email });
-
     if (!user) {
-      // Send a generic message to prevent email enumeration
       return res.status(200).json({ message: "If a user with that email exists, a password reset link has been sent." });
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    user.passwordResetToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-    user.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    user.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
     await user.save();
-
-    // Send email with reset link (use a frontend URL)
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
     const message = `You requested a password reset. Click this link to reset it: \n\n ${resetUrl}`;
-
+    
     try {
       await sendEmail({
         email: user.email,
@@ -188,23 +227,16 @@ export const forgotPassword = async (req, res) => {
 // @route   POST /api/auth/reset-password/:token
 // @access  Public
 export const resetPassword = async (req, res) => {
-  // Get hashed token from URL
-  const passwordResetToken = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
-
+  const passwordResetToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
   try {
     const user = await User.findOne({
       passwordResetToken,
       passwordResetExpires: { $gt: Date.now() },
     });
-
     if (!user) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
-    // Set new password
     if (!req.body.password || req.body.password.length < 6) {
         return res.status(400).json({ message: "Password must be at least 6 characters long." });
     }
@@ -212,7 +244,6 @@ export const resetPassword = async (req, res) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
-
     res.status(200).json({ message: "Password reset successful" });
   } catch (error) {
     console.error(error);
