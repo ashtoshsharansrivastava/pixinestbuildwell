@@ -15,8 +15,7 @@ import userRoutes from './routes/users.js';
 import enquiryRoutes from './routes/enquiryRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import brokerApplicationRoutes from './routes/brokerApplicationRoutes.js';
-import brokerRoutes from './routes/brokerRoutes.js'; // NEW: Broker Dashboard routes
-import momentRoutes from './routes/moments.js'; // NEW: Moments routes
+
 
 
 // Load environment variables from .env file
@@ -80,7 +79,6 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/broker-applications', brokerApplicationRoutes);
 app.use('/api/brokers', brokerRoutes); // NEW: Mount Broker Dashboard routes
 // --- END OF ROUTES ---
-app.use('/api/moments', momentRoutes); // NEW: Mount Moments routes
 
 
 // --- SERVER INITIALIZATION ---
