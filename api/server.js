@@ -15,6 +15,10 @@ import userRoutes from './routes/users.js';
 import enquiryRoutes from './routes/enquiryRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import brokerApplicationRoutes from './routes/brokerApplicationRoutes.js';
+import visitRoutes from './routes/visitRoutes.js';
+
+// ... other routes
+
 
 
 
@@ -78,6 +82,7 @@ app.use("/api/enquiries", enquiryRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/broker-applications', brokerApplicationRoutes);
 app.use('/api/brokers', brokerRoutes); // NEW: Mount Broker Dashboard routes
+app.use('/api/visits', visitRoutes);
 // --- END OF ROUTES ---
 
 
