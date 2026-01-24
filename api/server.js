@@ -16,7 +16,7 @@ import enquiryRoutes from './routes/enquiryRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import brokerApplicationRoutes from './routes/brokerApplicationRoutes.js';
 import visitRoutes from './routes/visitRoutes.js';
-
+import brokerRoutes from './routes/brokerRoutes.js';
 // ... other routes
 
 
