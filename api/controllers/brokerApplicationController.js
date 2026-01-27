@@ -1,7 +1,12 @@
-// backend/controllers/brokerApplicationController.js
 import asyncHandler from 'express-async-handler';
 import BrokerApplication from '../models/BrokerApplication.js';
 import User from '../models/User.js';
+import crypto from 'crypto'; // ✅ Added to generate secure codes
+
+// Helper to generate a code (e.g., "REF-A1B2C")
+const generateReferralCode = () => {
+  return 'REF-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+};
 
 // @desc    Submit a new broker application
 // @route   POST /api/broker-applications
@@ -42,7 +47,7 @@ const approveApplication = asyncHandler(async (req, res) => {
   }
 
   let referredBy = null;
-  // Check if a referral code was used
+  // Check if a referral code was used by the applicant
   if (application.referralCodeUsed) {
     const referringUser = await User.findOne({ referralCode: application.referralCodeUsed });
     if (referringUser) {
@@ -55,45 +60,53 @@ const approveApplication = asyncHandler(async (req, res) => {
 
   let user = await User.findOne({ email: application.email });
   
+  // SCENARIO 1: User already exists (e.g., registered as a normal user first)
   if (user) {
     if (user.role === 'admin' || user.role === 'broker') {
+      // If already processed, mark application as rejected to clear queue
       application.status = 'rejected';
       await application.save();
       res.status(400);
-      throw new Error('User is already an admin or broker. Cannot change role.');
+      throw new Error('User is already an admin or broker.');
     }
     
+    // Upgrade Role
     user.role = 'broker';
-    user.referredBy = referredBy; 
-    user.isVerified = true; // ✅ FIXED: Set to true on update
+    user.referredBy = referredBy || user.referredBy; // Keep existing referrer if present
+    user.isVerified = true;
+
+    // ✅ CRITICAL FIX: Generate code if they don't have one
+    if (!user.referralCode) {
+      user.referralCode = generateReferralCode();
+    }
+
     await user.save();
     
+    // Update Application Status
     application.status = 'approved';
     await application.save();
+    await application.deleteOne(); // Remove from list
 
-    // Delete the application from the database
-    await application.deleteOne();
-
-    res.status(200).json({ message: 'Existing user role updated to broker.' });
+    res.status(200).json({ message: 'Existing user role updated to broker with referral code.' });
+  
   } else {
+    // SCENARIO 2: User does not exist (Create new account)
     user = await User.create({
       fullName: application.fullName,
       email: application.email,
       phoneNumber: application.phone,
-      password: `password_${Date.now()}`,
+      password: `password_${Date.now()}`, // Temporary password
       role: 'broker',
-      isVerified: true, // ✅ FIXED: Set to true on creation
+      isVerified: true,
       referredBy: referredBy,
-      referralCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
-      referrals: 0 // Initialize referrals to 0 for a new user
+      referralCode: generateReferralCode(), // ✅ FIX: Use consistent generator
+      referrals: 0
     });
 
     application.status = 'approved';
     await application.save();
+    await application.deleteOne(); // Remove from list
 
-    // Delete the application from the database
-    await application.deleteOne();
-    
     res.status(201).json({ message: 'New broker approved and user account created.', user });
   }
 });
@@ -112,5 +125,4 @@ const rejectApplication = asyncHandler(async (req, res) => {
   }
 });
 
-// ✅ MOVED: Export statement is now at the end, after all function definitions
 export { submitApplication, getApplications, approveApplication, rejectApplication };
