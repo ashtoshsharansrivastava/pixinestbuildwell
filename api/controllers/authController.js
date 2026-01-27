@@ -55,7 +55,7 @@ export const googleAuth = async (req, res) => {
         password: randomPassword,
         phoneNumber: dummyPhone, 
         avatar: photo || '',
-        role: 'customer',
+        role: 'user',
         isVerified: true, // Google verified this email
         isGoogleUser: true
       });
