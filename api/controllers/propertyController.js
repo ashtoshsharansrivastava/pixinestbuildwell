@@ -47,8 +47,22 @@ const createProperty = asyncHandler(async (req, res) => {
     amenities,
   } = req.body;
 
-  // --- CHANGED: Get permanent image URLs directly from Cloudinary ---
+  // Get permanent image URLs directly from Cloudinary
   const imagePaths = (req.files || []).map(file => file.path);
+
+  // ✅ NEW: Handle GeoJSON format for the map
+  // Default to [0,0] if lat/lng are missing to prevent crash
+  let locationCoords = {
+    type: 'Point',
+    coordinates: [0, 0] 
+  };
+
+  if (lat && lng) {
+    locationCoords = {
+      type: 'Point',
+      coordinates: [safeParseNumber(lng), safeParseNumber(lat)] // MongoDB uses [Lng, Lat]
+    };
+  }
 
   const property = await Property.create({
     title, description, propertyType,
@@ -63,10 +77,7 @@ const createProperty = asyncHandler(async (req, res) => {
     images: imagePaths,
     videoUrls: videoUrls ? JSON.parse(videoUrls) : [],
     amenities: amenities ? JSON.parse(amenities) : [],
-    locationCoords: {
-      lat: safeParseNumber(lat),
-      lng: safeParseNumber(lng),
-    },
+    locationCoords, // ✅ Updated to use GeoJSON
     agent: req.user._id,
   });
   res.status(201).json(property);
@@ -83,7 +94,6 @@ const updateProperty = asyncHandler(async (req, res) => {
     throw new Error("Property not found");
   }
 
-  // --- CHANGED: Get permanent image URLs for new files from Cloudinary ---
   const newImagePaths = (req.files || []).map(file => file.path);
 
   let existingImagePaths = [];
@@ -119,10 +129,12 @@ const updateProperty = asyncHandler(async (req, res) => {
     JSON.parse(req.body.videoUrls) : property.videoUrls;
   property.amenities = req.body.amenities ? JSON.parse(req.body.amenities) : property.amenities;
 
+  // ✅ NEW: Update GeoJSON coordinates
   if (req.body.lat && req.body.lng) {
-    property.locationCoords = { lat: safeParseNumber(req.body.lat), lng: safeParseNumber(req.body.lng) };
-  } else if (req.body.lat === '' || req.body.lng === '') {
-      property.locationCoords = { lat: null, lng: null };
+    property.locationCoords = {
+      type: 'Point',
+      coordinates: [safeParseNumber(req.body.lng), safeParseNumber(req.body.lat)] // [Lng, Lat]
+    };
   }
   
   property.isPublished = req.body.isPublished !== undefined ?
@@ -145,8 +157,6 @@ const deleteProperty = asyncHandler(async (req, res) => {
     throw new Error("Property not found");
   }
 });
-
-// --- ROUTES FOR REVIEWS --- (This part remains unchanged)
 
 // @desc    Get reviews for a property
 // @route   GET /api/properties/:id/reviews
@@ -188,6 +198,46 @@ const createReview = asyncHandler(async (req, res) => {
   res.status(201).json({ message: 'Review added' });
 });
 
+// ✅ NEW: Find properties inside a drawn area (Polygon Search)
+// @route   POST /api/properties/search-area
+// @access  Public
+const searchInArea = async (req, res) => {
+  const { polygon } = req.body; // Expects [{lat: x, lng: y}, ...]
+
+  if (!polygon || polygon.length < 3) {
+    return res.status(400).json({ message: 'Invalid drawing. Please draw a complete shape.' });
+  }
+
+  // 1. Convert Coordinates: Leaflet gives [Lat, Lng], MongoDB needs [Lng, Lat]
+  let mongoPolygon = polygon.map(p => [p.lng, p.lat]);
+
+  // 2. Close the Loop: The first and last points must match
+  const firstPoint = mongoPolygon[0];
+  const lastPoint = mongoPolygon[mongoPolygon.length - 1];
+
+  if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1]) {
+    mongoPolygon.push(firstPoint);
+  }
+
+  try {
+    const properties = await Property.find({
+      locationCoords: {
+        $geoWithin: {
+          $geometry: {
+            type: 'Polygon',
+            coordinates: [mongoPolygon] // Double brackets required for GeoJSON Polygons
+          }
+        }
+      }
+    });
+
+    res.json(properties);
+  } catch (error) {
+    console.error("Geo Search Error:", error);
+    res.status(500).json({ message: 'Map search failed', error: error.message });
+  }
+};
+
 export {
   getProperties,
   getPropertyById,
@@ -196,4 +246,5 @@ export {
   deleteProperty,
   getReviewsForProperty,
   createReview,
+  searchInArea, // ✅ Exported the new function
 };
