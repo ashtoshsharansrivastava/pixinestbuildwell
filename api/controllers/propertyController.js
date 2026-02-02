@@ -1,5 +1,3 @@
-// api/controllers/propertyController.js
-
 import Property from "../models/Property.js";
 import Review from "../models/Review.js";
 import asyncHandler from 'express-async-handler';
@@ -198,45 +196,65 @@ const createReview = asyncHandler(async (req, res) => {
   res.status(201).json({ message: 'Review added' });
 });
 
-// ✅ NEW: Find properties inside a drawn area (Polygon Search)
+// ---------------------------------------------------------
+// ✅ NEW: UNIVERSAL SEARCH LOGIC (Works with Old & New Data)
+// ---------------------------------------------------------
+
+// Helper: Check if a point is inside a polygon (Ray Casting Algorithm)
+const isPointInPolygon = (latitude, longitude, polygon) => {
+  // Polygon is an array of objects: [{lat, lng}, {lat, lng}...]
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].lat, yi = polygon[i].lng;
+    const xj = polygon[j].lat, yj = polygon[j].lng;
+
+    const intersect = ((yi > longitude) !== (yj > longitude)) &&
+      (latitude < (xj - xi) * (longitude - yi) / (yj - yi) + xi);
+    
+    if (intersect) inside = !inside;
+  }
+  return inside;
+};
+
 // @route   POST /api/properties/search-area
 // @access  Public
-const searchInArea = async (req, res) => {
+const searchInArea = asyncHandler(async (req, res) => {
   const { polygon } = req.body; // Expects [{lat: x, lng: y}, ...]
 
   if (!polygon || polygon.length < 3) {
     return res.status(400).json({ message: 'Invalid drawing. Please draw a complete shape.' });
   }
 
-  // 1. Convert Coordinates: Leaflet gives [Lat, Lng], MongoDB needs [Lng, Lat]
-  let mongoPolygon = polygon.map(p => [p.lng, p.lat]);
+  // 1. Fetch ALL properties
+  // (We fetch all because we need to check both Old and New coordinate formats manually)
+  const properties = await Property.find({});
 
-  // 2. Close the Loop: The first and last points must match
-  const firstPoint = mongoPolygon[0];
-  const lastPoint = mongoPolygon[mongoPolygon.length - 1];
+  // 2. Filter them manually using JavaScript
+  const filteredProperties = properties.filter(prop => {
+    let lat, lng;
 
-  if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1]) {
-    mongoPolygon.push(firstPoint);
-  }
+    // CHECK 1: Is it the OLD format? (locationCoords.lat)
+    // This handles your existing "Ganga Valley" property
+    if (prop.locationCoords && prop.locationCoords.lat !== undefined) {
+      lat = prop.locationCoords.lat;
+      lng = prop.locationCoords.lng;
+    } 
+    // CHECK 2: Is it the NEW format? (GeoJSON coordinates array)
+    // This handles any NEW properties you create
+    else if (prop.locationCoords && prop.locationCoords.coordinates) {
+      lng = prop.locationCoords.coordinates[0]; // GeoJSON is [Lng, Lat]
+      lat = prop.locationCoords.coordinates[1];
+    }
 
-  try {
-    const properties = await Property.find({
-      locationCoords: {
-        $geoWithin: {
-          $geometry: {
-            type: 'Polygon',
-            coordinates: [mongoPolygon] // Double brackets required for GeoJSON Polygons
-          }
-        }
-      }
-    });
+    // If we found valid coordinates, check if they are inside the drawn shape
+    if (lat && lng) {
+      return isPointInPolygon(lat, lng, polygon);
+    }
+    return false;
+  });
 
-    res.json(properties);
-  } catch (error) {
-    console.error("Geo Search Error:", error);
-    res.status(500).json({ message: 'Map search failed', error: error.message });
-  }
-};
+  res.json(filteredProperties);
+});
 
 export {
   getProperties,
@@ -246,5 +264,5 @@ export {
   deleteProperty,
   getReviewsForProperty,
   createReview,
-  searchInArea, // ✅ Exported the new function
+  searchInArea, 
 };
