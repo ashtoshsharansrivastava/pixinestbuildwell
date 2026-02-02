@@ -5,7 +5,7 @@ const propertySchema = mongoose.Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
     propertyType: { type: String, required: true },
-    price: { type: Number, required: true }, // Recommendation: Keep Price as Number for sorting!
+    price: { type: String, required: true }, // Recommendation: Keep Price as Number for sorting!
     area: { type: String, required: true },
     bedrooms: { type: Number, default: 0 },
     bathrooms: { type: Number, default: 0 },
