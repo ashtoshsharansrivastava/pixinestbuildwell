@@ -1,45 +1,35 @@
 // utils/sendEmail.js
-
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
 /**
- * Sends an email using the SendGrid API.
- * This function is designed to replace the original Nodemailer SMTP transport
- * to work with hosting providers like Render that block direct SMTP connections.
- *
- * @param {object} options - The email options.
- * @param {string} options.email - The recipient's email address.
- * @param {string} options.subject - The subject of the email.
- * @param {string} options.message - The plain text content of the email.
+ * Sends an email using the Resend API.
+ * Replaces SendGrid to ensure compatibility with Render.
  */
 const sendEmail = async (options) => {
-  // Set the SendGrid API key from your environment variables
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-  // Construct the email message
-  const message = {
-    to: options.email,
-    from: 'pixienestbuildwell263@gmail.com', // IMPORTANT: Replace this with the single sender email you verified in your SendGrid account.
-    subject: options.subject,
-    text: options.message,
-    // You can also include an HTML version of your message
-    // html: `<strong>${options.message}</strong>`,
-  };
+  // Initialize Resend with your API Key
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
-    // Send the email using SendGrid's library
-    await sgMail.send(message);
-    console.log(`Email successfully sent to ${options.email}`);
-  } catch (error) {
-    console.error('Error sending email via SendGrid:', error);
+    const { data, error } = await resend.emails.send({
+      /* Note: If you haven't verified a custom domain yet, 
+         you MUST use 'onboarding@resend.dev' as the "from" address.
+      */
+      from: 'pixienestbuildwell26@gmail.com', 
+      to: options.email,
+      subject: options.subject,
+      text: options.message,
+      // html: `<p>${options.message}</p>`, // Optional: Use this for better formatting
+    });
 
-    // If SendGrid returns a detailed error response, log it
-    if (error.response) {
-      console.error(error.response.body);
+    if (error) {
+      console.error('Resend API Error:', error);
+      throw new Error('Email could not be sent.');
     }
 
-    // Throw a new error to be caught by the calling function (e.g., in authController.js)
-    throw new Error('Email could not be sent.');
+    console.log(`Email successfully sent to ${options.email}. ID: ${data.id}`);
+  } catch (error) {
+    console.error('System Error sending email via Resend:', error);
+    throw new Error('Email service failure.');
   }
 };
 
