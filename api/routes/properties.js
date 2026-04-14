@@ -12,12 +12,14 @@ import {
 } from '../controllers/propertyController.js';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-// Now we can use classic CommonJS require for this stubborn package!
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// The clean way to import CommonJS into Node 22 ESM
+import pkg from 'multer-storage-cloudinary';
+const { CloudinaryStorage } = pkg;
 
 const router = express.Router();
+
+// ... rest of your configuration and routes below
 
 // --- CONFIGURATION: CLOUDINARY ---
 cloudinary.config({
