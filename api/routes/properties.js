@@ -10,11 +10,12 @@ import {
   createReview,
   searchInArea, 
 } from '../controllers/propertyController.js';
-
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import pkg from 'multer-storage-cloudinary';
-const { CloudinaryStorage } = pkg;
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+// Now we can use classic CommonJS require for this stubborn package!
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const router = express.Router();
 
