@@ -1,34 +1,34 @@
 // utils/sendEmail.js
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 /**
- * Sends an email using the Resend API.
- * Replaces SendGrid to ensure compatibility with Render.
+ * Sends an email using Gmail's SMTP server via an App Password.
  */
 const sendEmail = async (options) => {
-  // Initialize Resend with your API Key
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  // 1. Create a transporter using Gmail
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_EMAIL,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
 
+  // 2. Define the email options
+  const mailOptions = {
+    from: `PixieNest Buildwell <${process.env.GMAIL_EMAIL}>`,
+    to: options.email,
+    subject: options.subject,
+    text: options.message,
+    // html: `<p>${options.message}</p>`, // Optional: Use this if your message is formatted with HTML
+  };
+
+  // 3. Send the email
   try {
-    const { data, error } = await resend.emails.send({
-      /* Note: If you haven't verified a custom domain yet, 
-         you MUST use 'onboarding@resend.dev' as the "from" address.
-      */
-      from: 'pixienestbuildwell26@gmail.com', 
-      to: options.email,
-      subject: options.subject,
-      text: options.message,
-      // html: `<p>${options.message}</p>`, // Optional: Use this for better formatting
-    });
-
-    if (error) {
-      console.error('Resend API Error:', error);
-      throw new Error('Email could not be sent.');
-    }
-
-    console.log(`Email successfully sent to ${options.email}. ID: ${data.id}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email successfully sent to ${options.email}. Message ID: ${info.messageId}`);
   } catch (error) {
-    console.error('System Error sending email via Resend:', error);
+    console.error('System Error sending email via Gmail:', error);
     throw new Error('Email service failure.');
   }
 };
