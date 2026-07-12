@@ -26,6 +26,13 @@ const protect = async (req, res, next) => {
 
       next();
     } catch (error) {
+      // ✅ Check specifically for expired tokens
+      if (error.name === "TokenExpiredError") {
+        console.log("JWT Expired - Request blocked cleanly."); // Clean log, no stack trace
+        return res.status(401).json({ message: "Session expired. Please log in again." });
+      }
+
+      // Log other unexpected errors
       console.error(error);
       return res.status(401).json({ message: "Not authorized, token failed" });
     }
