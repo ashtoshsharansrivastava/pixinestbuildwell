@@ -22,7 +22,7 @@ import PropertyManagement from './pages/Admin/PropertyManagement.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
 import EnquiryManagement from './pages/Admin/EnquiryManagement.jsx';
 import BrokerDashboard from './pages/BrokerDashboard.jsx';
-import BrokerRoute from './components/BrokerRoute.jsx'; // ✅ Import BrokerRoute
+import BrokerRoute from './components/BrokerRoute.jsx';
 
 // --- Style Imports ---
 import './styles/styles.css';
@@ -43,7 +43,13 @@ export default function App() {
           <Route path="about" element={<About />} />
           <Route path="services" element={<Services />} />
           <Route path="contact" element={<Contact />} />
+          
+          {/* Standard Properties Route */}
           <Route path="properties" element={<Properties />} />
+          
+          {/* ✅ NEW: Dedicated SEO Route for Cities (e.g. /properties-in-ghaziabad) */}
+          <Route path="properties-in-:city" element={<Properties />} />
+
           <Route path="properties/:id" element={<PropertyDetail />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
@@ -52,12 +58,12 @@ export default function App() {
           <Route path="verify-otp" element={<VerifyOtp />} />
         </Route>
 
-        {/* ✅ ADDED: Protected Broker Dashboard route */}
+        {/* Protected Broker Dashboard route */}
         <Route element={<BrokerRoute />}>
             <Route path="/broker" element={<BrokerDashboard />} />
         </Route>
 
-        {/* Admin routes that are protected and use a separate admin layout */}
+        {/* Admin routes */}
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />

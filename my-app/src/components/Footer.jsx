@@ -13,7 +13,8 @@ export default function Footer() {
 
   return (
     <footer className="bg-white text-gray-900 py-12 sm:py-16 border-t border-gray-200 shadow-[0_-8px_30px_rgba(0,0,0,0.1)]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-24 flex flex-col sm:flex-row items-center justify-between gap-8">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
+        
         {/* Logo and Copyright */}
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-3">
           <Link to="/" className="flex items-center gap-3">
@@ -25,7 +26,7 @@ export default function Footer() {
               whileHover={{ rotate: -12, scale: 1.12 }}
               transition={{ type: 'spring', stiffness: 280, damping: 18 }}
             />
-            <span className="header-title text-3xl font-extrabold tracking-wide">
+            <span className="header-title text-2xl font-extrabold tracking-wide">
               <span className="text-gray-900">
                 PixieNest BuildWell
               </span>
@@ -36,34 +37,46 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Social Media Links */}
-        <div className="flex gap-6 text-2xl">
-          {socialIcons.map(({ href, icon: Icon, color }) => (
-            <motion.a
-              key={href}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`text-gray-500 ${color} transition-colors duration-300 transform hover:scale-125`}
-              whileHover={{ scale: 1.25 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <Icon size={28} />
-            </motion.a>
-          ))}
+        {/* ✅ NEW: Top Locations (SEO Internal Links for Google Crawlers) */}
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 border-b-2 border-orange-500 pb-1">Top Locations</h3>
+          <Link to="/properties-in-ghaziabad" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">Properties in Ghaziabad</Link>
+          <Link to="/properties-in-meerut" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">Properties in Meerut</Link>
+          <Link to="/properties-in-noida" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">Properties in Noida</Link>
+          <Link to="/properties-in-delhi" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">Properties in Delhi</Link>
         </div>
 
         {/* Quick Links */}
-        <div className="flex flex-col items-center sm:items-end text-center sm:text-right space-y-2">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Quick Links</h3>
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 border-b-2 border-orange-500 pb-1">Quick Links</h3>
           <Link to="/" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">Home</Link>
           <Link to="/about" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">About Us</Link>
           <Link to="/services" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">Services</Link>
-          <Link to="/properties" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">Properties</Link>
+          <Link to="/properties" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">All Properties</Link>
           <Link to="/contact" className="text-gray-600 hover:text-orange-500 transition-colors duration-300 text-sm">Contact</Link>
         </div>
+
+        {/* Social Media Links */}
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b-2 border-orange-500 pb-1">Follow Us</h3>
+          <div className="flex gap-4 text-2xl">
+            {socialIcons.map(({ href, icon: Icon, color }) => (
+              <motion.a
+                key={href}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`text-gray-500 ${color} transition-colors duration-300 transform hover:scale-125`}
+                whileHover={{ scale: 1.25 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
+                <Icon size={24} />
+              </motion.a>
+            ))}
+          </div>
+        </div>
+
       </div>
     </footer>
   );
 }
-
