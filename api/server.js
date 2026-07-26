@@ -74,6 +74,11 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 //   res.send("API is running...");
 // });
 
+// ✅ ADDED: Lightweight ping route to keep the Render server awake
+app.get('/api/ping', (req, res) => {
+  res.status(200).json({ message: 'PixieNest BuildWell backend is awake!' });
+});
+
 // Mount all routers
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
