@@ -48,7 +48,7 @@ const createProperty = asyncHandler(async (req, res) => {
   // Get permanent image URLs directly from Cloudinary
   const imagePaths = (req.files || []).map(file => file.path);
 
-  // ✅ NEW: Handle GeoJSON format for the map
+  // ✅ Handle GeoJSON format for the map
   // Default to [0,0] if lat/lng are missing to prevent crash
   let locationCoords = {
     type: 'Point',
@@ -127,7 +127,7 @@ const updateProperty = asyncHandler(async (req, res) => {
     JSON.parse(req.body.videoUrls) : property.videoUrls;
   property.amenities = req.body.amenities ? JSON.parse(req.body.amenities) : property.amenities;
 
-  // ✅ NEW: Update GeoJSON coordinates
+  // ✅ Update GeoJSON coordinates
   if (req.body.lat && req.body.lng) {
     property.locationCoords = {
       type: 'Point',
@@ -197,19 +197,30 @@ const createReview = asyncHandler(async (req, res) => {
 });
 
 // ---------------------------------------------------------
-// ✅ NEW: UNIVERSAL SEARCH LOGIC (Works with Old & New Data)
+// ✅ UNIVERSAL SEARCH LOGIC (Updated & Fixed)
 // ---------------------------------------------------------
 
 // Helper: Check if a point is inside a polygon (Ray Casting Algorithm)
-const isPointInPolygon = (latitude, longitude, polygon) => {
-  // Polygon is an array of objects: [{lat, lng}, {lat, lng}...]
+const isPointInPolygon = (latitude, longitude, polygonPoints) => {
   let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].lat, yi = polygon[i].lng;
-    const xj = polygon[j].lat, yj = polygon[j].lng;
+  const x = Number(latitude);
+  const y = Number(longitude);
 
-    const intersect = ((yi > longitude) !== (yj > longitude)) &&
-      (latitude < (xj - xi) * (longitude - yi) / (yj - yi) + xi);
+  for (let i = 0, j = polygonPoints.length - 1; i < polygonPoints.length; j = i++) {
+    const ptI = polygonPoints[i];
+    const ptJ = polygonPoints[j];
+
+    // Read coordinates from {lat, lng}, {lat, lon}, or array formats
+    const xi = Number(ptI.lat ?? ptI[0]);
+    const yi = Number(ptI.lng ?? ptI.lon ?? ptI[1]);
+    const xj = Number(ptJ.lat ?? ptJ[0]);
+    const yj = Number(ptJ.lng ?? ptJ.lon ?? ptJ[1]);
+
+    if (isNaN(xi) || isNaN(yi) || isNaN(xj) || isNaN(yj)) continue;
+    if (yj === yi) continue; // Avoid division by zero
+
+    const intersect = ((yi > y) !== (yj > y)) &&
+      (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
     
     if (intersect) inside = !inside;
   }
@@ -219,35 +230,47 @@ const isPointInPolygon = (latitude, longitude, polygon) => {
 // @route   POST /api/properties/search-area
 // @access  Public
 const searchInArea = asyncHandler(async (req, res) => {
-  const { polygon } = req.body; // Expects [{lat: x, lng: y}, ...]
+  let { polygon } = req.body;
 
-  if (!polygon || polygon.length < 3) {
+  if (!polygon || !Array.isArray(polygon) || polygon.length === 0) {
     return res.status(400).json({ message: 'Invalid drawing. Please draw a complete shape.' });
   }
 
-  // 1. Fetch ALL properties
-  // (We fetch all because we need to check both Old and New coordinate formats manually)
+  // 1. Flatten nested Leaflet arrays [[{lat, lng}, ...]] into [{lat, lng}, ...]
+  if (Array.isArray(polygon[0])) {
+    polygon = polygon.flat(Infinity);
+  }
+
+  if (polygon.length < 3) {
+    return res.status(400).json({ message: 'Invalid drawing. Please draw a shape with at least 3 points.' });
+  }
+
+  // 2. Fetch ALL properties
   const properties = await Property.find({});
 
-  // 2. Filter them manually using JavaScript
+  // 3. Filter them manually using JavaScript across all format types
   const filteredProperties = properties.filter(prop => {
-    let lat, lng;
+    let lat = null;
+    let lng = null;
 
-    // CHECK 1: Is it the OLD format? (locationCoords.lat)
-    // This handles your existing "Ganga Valley" property
-    if (prop.locationCoords && prop.locationCoords.lat !== undefined) {
-      lat = prop.locationCoords.lat;
-      lng = prop.locationCoords.lng;
+    // CHECK 1: Direct top-level fields (prop.lat, prop.lng)
+    if (prop.lat !== undefined && prop.lng !== undefined && prop.lat !== null && prop.lng !== null) {
+      lat = Number(prop.lat);
+      lng = Number(prop.lng);
     } 
-    // CHECK 2: Is it the NEW format? (GeoJSON coordinates array)
-    // This handles any NEW properties you create
-    else if (prop.locationCoords && prop.locationCoords.coordinates) {
-      lng = prop.locationCoords.coordinates[0]; // GeoJSON is [Lng, Lat]
-      lat = prop.locationCoords.coordinates[1];
+    // CHECK 2: Is it the OLD format? (locationCoords.lat)
+    else if (prop.locationCoords && prop.locationCoords.lat !== undefined) {
+      lat = Number(prop.locationCoords.lat);
+      lng = Number(prop.locationCoords.lng);
+    } 
+    // CHECK 3: Is it the GeoJSON format? (coordinates array [lng, lat])
+    else if (prop.locationCoords && Array.isArray(prop.locationCoords.coordinates) && prop.locationCoords.coordinates.length >= 2) {
+      lng = Number(prop.locationCoords.coordinates[0]); // GeoJSON is [Lng, Lat]
+      lat = Number(prop.locationCoords.coordinates[1]);
     }
 
-    // If we found valid coordinates, check if they are inside the drawn shape
-    if (lat && lng) {
+    // If valid numeric coordinates exist, verify if they lie within the shape
+    if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
       return isPointInPolygon(lat, lng, polygon);
     }
     return false;
