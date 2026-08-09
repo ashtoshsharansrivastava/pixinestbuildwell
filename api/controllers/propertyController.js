@@ -203,21 +203,21 @@ const createReview = asyncHandler(async (req, res) => {
 // Helper: Check if a point is inside a polygon (Ray Casting Algorithm)
 const isPointInPolygon = (latitude, longitude, polygonPoints) => {
   let inside = false;
-  const x = Number(latitude);
-  const y = Number(longitude);
+  const y = Number(latitude);  // Latitude maps to Y-axis
+  const x = Number(longitude); // Longitude maps to X-axis
 
   for (let i = 0, j = polygonPoints.length - 1; i < polygonPoints.length; j = i++) {
     const ptI = polygonPoints[i];
     const ptJ = polygonPoints[j];
 
-    // Read coordinates from {lat, lng}, {lat, lon}, or array formats
-    const xi = Number(ptI.lat ?? ptI[0]);
-    const yi = Number(ptI.lng ?? ptI.lon ?? ptI[1]);
-    const xj = Number(ptJ.lat ?? ptJ[0]);
-    const yj = Number(ptJ.lng ?? ptJ.lon ?? ptJ[1]);
+    // Ensure we are strictly extracting numbers regardless of Leaflet's object structure
+    const xi = Number(ptI.lng ?? ptI[0]);
+    const yi = Number(ptI.lat ?? ptI[1]);
+    const xj = Number(ptJ.lng ?? ptJ[0]);
+    const yj = Number(ptJ.lat ?? ptJ[1]);
 
     if (isNaN(xi) || isNaN(yi) || isNaN(xj) || isNaN(yj)) continue;
-    if (yj === yi) continue; // Avoid division by zero
+    if (yi === yj) continue; // Prevent division by zero
 
     const intersect = ((yi > y) !== (yj > y)) &&
       (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
@@ -236,12 +236,21 @@ const searchInArea = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Invalid drawing. Please draw a complete shape.' });
   }
 
-  // 1. Flatten nested Leaflet arrays [[{lat, lng}, ...]] into [{lat, lng}, ...]
+  // 1. Flatten and strictly map the polygon to extract raw numbers (stripping Leaflet prototypes)
+  let sanitizedPolygon = [];
   if (Array.isArray(polygon[0])) {
-    polygon = polygon.flat(Infinity);
+    sanitizedPolygon = polygon.flat(Infinity).map(pt => ({
+      lat: Number(pt.lat),
+      lng: Number(pt.lng)
+    }));
+  } else {
+    sanitizedPolygon = polygon.map(pt => ({
+      lat: Number(pt.lat),
+      lng: Number(pt.lng)
+    }));
   }
 
-  if (polygon.length < 3) {
+  if (sanitizedPolygon.length < 3) {
     return res.status(400).json({ message: 'Invalid drawing. Please draw a shape with at least 3 points.' });
   }
 
@@ -269,9 +278,9 @@ const searchInArea = asyncHandler(async (req, res) => {
       lat = Number(prop.locationCoords.coordinates[1]);
     }
 
-    // If valid numeric coordinates exist, verify if they lie within the shape
-    if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
-      return isPointInPolygon(lat, lng, polygon);
+    // If valid numeric coordinates exist (and are not the [0,0] default in the ocean), verify if they lie within the shape
+    if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+      return isPointInPolygon(lat, lng, sanitizedPolygon);
     }
     return false;
   });
